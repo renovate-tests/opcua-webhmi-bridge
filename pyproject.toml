@@ -37,6 +37,7 @@ pytest-aiohttp = "^0.3.0"
 toml = "^0.10.2"
 requests = "^2.25.1"
 websocket_client = "^0.58.0"
+influxdb-client = "^1.15.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

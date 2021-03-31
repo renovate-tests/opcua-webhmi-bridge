@@ -6,12 +6,17 @@ from typing import Any, Dict, Generator, List, Literal, Optional
 
 import pytest
 import requests
+from influxdb_client import InfluxDBClient
 from yarl import URL
 
 from .conftest import MainProcessFixture, OPCServer
 
 INFLUXDB_HOST = "influxdb"
 INFLUXDB_DB = "test_bucket"
+INFLUXDB_TOKEN = (
+    "zsQmRXoNWcQU4jsJxGOMQqwu5KLNGUhsxg4KZ2YRypNP"  # noqa: S105
+    "C8FV7VUlygO4YndqHFlY4KwoOe5Dt0nrosEvDJYkiQ=="
+)
 
 
 @dataclass
@@ -24,6 +29,7 @@ class InfluxDBQuery:
 class InfluxDB:
     def __init__(self) -> None:
         self.root_url = URL(f"http://{INFLUXDB_HOST}:8086")
+        self.client = InfluxDBClient(self.root_url, token=INFLUXDB_TOKEN, org="testorg")
 
     def url(self, endpoint: str) -> str:
         return str(self.root_url / endpoint)
@@ -42,13 +48,11 @@ class InfluxDB:
         return list(csv.DictReader(resp.text.splitlines()))
 
     def ping(self) -> bool:
-        try:
-            resp = requests.get(self.url("ping"))
-            resp.raise_for_status()
-        except requests.RequestException:
+        resp = requests.get(self.url("ready"))
+        if resp.status_code != 200:
             return False
-        else:
-            return True
+        resp = requests.get(self.url("api/v2/setup"))
+        return resp.json()["allowed"] is False
 
 
 @pytest.fixture()
@@ -56,8 +60,8 @@ def influxdb() -> Generator[InfluxDB, None, None]:
     _influxdb = InfluxDB()
     while not _influxdb.ping():
         time.sleep(0.1)
-    _influxdb.query(InfluxDBQuery("POST", f"CREATE DATABASE {INFLUXDB_DB}"))
     yield _influxdb
+    _influxdb.query(InfluxDBQuery("POST", f"CREATE DATABASE {INFLUXDB_DB}"))
     _influxdb.query(InfluxDBQuery("POST", f"DROP DATABASE {INFLUXDB_DB}"))
 
 

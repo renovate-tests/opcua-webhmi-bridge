@@ -17,7 +17,7 @@ services:
           --no-default \
           --no-comments \
           --no-indexes \
-          | grep -E '(pytest|requests|websocket-client|yarl)=')
+          | grep -E '(influxdb-client|pytest|requests|websocket-client|yarl)=')
         pytest -vv tests/integration
     depends_on:
       - centrifugo
@@ -34,7 +34,15 @@ services:
     build: ./opc_server
 
   influxdb:
-    image: influxdb:1.8
+    image: influxdb:2.0
+    environment:
+      - INFLUXD_REPORTING_DISABLED=true
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=testadmin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=testpassword
+      - DOCKER_INFLUXDB_INIT_ORG=testorg
+      - DOCKER_INFLUXDB_INIT_BUCKET=testbucket
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=zsQmRXoNWcQU4jsJxGOMQqwu5KLNGUhsxg4KZ2YRypNPC8FV7VUlygO4YndqHFlY4KwoOe5Dt0nrosEvDJYkiQ==
     tty: true
 
   centrifugo:
