@@ -88,7 +88,7 @@ jobs:
       - name: Check static typing of the main package
         run: mypy src/opcua_webhmi_bridge
       - name: Lint Dockerfile
-        uses: brpaz/hadolint-action@v1.2.1
+        uses: brpaz/hadolint-action@v1.3.1
   unit-tests:
     name: Unit tests and code coverage
     runs-on: ubuntu-latest
